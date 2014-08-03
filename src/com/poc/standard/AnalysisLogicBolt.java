@@ -18,6 +18,7 @@ import backtype.storm.tuple.Values;
 
 public class AnalysisLogicBolt extends BaseBasicBolt {
 
+	
 	@Override
 	public void execute(Tuple input, BasicOutputCollector collector) {
 
