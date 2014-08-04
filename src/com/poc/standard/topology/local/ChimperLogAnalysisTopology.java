@@ -34,7 +34,7 @@ public class ChimperLogAnalysisTopology {
 			conf.setDebug(false);
 			conf.setMaxTaskParallelism(3);
 			
-			int batchSize = 25;
+			int batchSize = 100;
 			builder.setSpout("LogGenerationSpout", new LogGenerationSpout(batchSize), 1);
 
 			builder.setBolt("BatchSizeFilterBolt", new BatchSizeFilterBolt(batchSize),

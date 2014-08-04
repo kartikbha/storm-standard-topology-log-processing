@@ -35,7 +35,6 @@ public class BatchSizeFilterBolt extends BaseBasicBolt {
 	@Override
 	public void execute(Tuple input, BasicOutputCollector collector) {
 
-		//System.out.println(" BatchSizeFilterBolt ... " + input);
 		List<String> row = new ArrayList<String>();
 		row.add(input.getString(1));
 		row.add(input.getString(2));

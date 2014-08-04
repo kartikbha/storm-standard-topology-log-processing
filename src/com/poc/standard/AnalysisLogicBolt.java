@@ -30,130 +30,138 @@ public class AnalysisLogicBolt extends BaseBasicBolt {
 		ConcurrentHashMap<String, List<String>> mapForAnalysis = (ConcurrentHashMap<String, List<String>>) input
 				.getValueByField("batch");
 
-		Map<String, List<Map<String, List<Integer>>>> aggregateMap = new HashMap<String, List<Map<String, List<Integer>>>>();
-		Map<String, Map<String, List<Integer>>> tmpFreqMap = new HashMap<String, Map<String, List<Integer>>>();
-		Map<String, Map<String, List<Integer>>> tmpIndexMap = new HashMap<String, Map<String, List<Integer>>>();
-		Map<String, List<Integer>> tmpIndexListMap = new HashMap<String, List<Integer>>();
-
-		// key1(geo_pub_time) ------> value(< geo_pub_time_index =
-		// "lists of index", geo_pub_time_freq = frequency>)
-
-		// iterate entry set above map again once done
-
-		// get key ....parse value....get list of indexes
-		// {mapForAnalysis}....calculate bid avg/frequency
-
-		// lets impression as frequency now.
-		System.out.println(" mapForAnalysis size " + mapForAnalysis.size());
-		System.out.println(" mapForAnalysis " + mapForAnalysis);
-
-		LOG.info(" mapForAnalysis "+mapForAnalysis);
+		Map <String,Map <String, List<List<Integer>>>> tmpholderForGeoPubTimeFreqMap = new HashMap<String, Map<String, List<List<Integer>>>>();
+		Map<String, List<Integer>> tmpholderForIndexMap = new HashMap<String, List<Integer>>();
 		
-		List<String> keyGeoPubTimeList = new ArrayList<String>();
-		List<String> keyGeoPubIndexList = new ArrayList<String>();
-
-		Map<String, List<Integer>> geoPubTimeFreqMap = null;
-		Map<String, List<Integer>> geoPubTimeIndexMap = null;
+	   // System.out.println(" mapForAnalysis " + mapForAnalysis);
+        List<String> keyGeoPubTimeUpToMinuteList = new ArrayList<String>();
+		List<String> keyGeoPubFullTimeList = new ArrayList<String>();
+		Map<String, List<List<Integer>>> geoPubTimeFreqMap = null;
 		List<Integer> indexList = null;
+	    
 		for (Entry<String, List<String>> entry : mapForAnalysis.entrySet()) {
 			List<String> logRow = entry.getValue();
 			// key are geo,pub,time upto minute.
-			String keyGeoPub = logRow.get(0) + logRow.get(1);
-			String keyGeoPubTimePub = keyGeoPub
+			String index = entry.getKey();
+        	String keyGeoPub = logRow.get(0) + logRow.get(1);
+			String keyGeoPubFullTimePub = keyGeoPub + logRow.get(4);
+			String keyGeoPubMinutePub = keyGeoPub
 					+ getDateUptoMinute(logRow.get(4));
 
-			if (!keyGeoPubTimeList.contains(keyGeoPubTimePub + "freq")) {
-				keyGeoPubTimeList.add(keyGeoPubTimePub + "freq");
-				geoPubTimeFreqMap = new HashMap<String, List<Integer>>();
-				tmpFreqMap.put(keyGeoPubTimePub + "freq", geoPubTimeFreqMap);
-			} else {
-				geoPubTimeFreqMap = tmpFreqMap.get(keyGeoPubTimePub + "freq");
+			// this is just a duplicate log impression, count it frequency but
+			// don't use in calculation
+			if (keyGeoPubFullTimeList.contains(keyGeoPubFullTimePub)) {
+				
+			//	System.out.println("keyGeoPubFullTimeList ..... "+keyGeoPubFullTimeList);
+				// this i should count to tell total impression received.
+				geoPubTimeFreqMap = tmpholderForGeoPubTimeFreqMap.get(keyGeoPubMinutePub);
+				List<List<Integer>> holderList = geoPubTimeFreqMap.get(keyGeoPubMinutePub);
+				int total = holderList.get(1).get(0)+new Integer(1);
+				holderList.get(1).remove(0);
+			    holderList.get(1).add(0,total);
+				//System.out.println("total holderList ...... "+holderList);
+				geoPubTimeFreqMap.put(keyGeoPubMinutePub, holderList);
+				//geoPubTimeFreqMap.put(keyGeoPubMinutePub,geoPubTimeFreqMap.get(keyGeoPubMinutePub).get(1).add(newImpressionCount));
+		
+     	  } else {
+		   
+				keyGeoPubFullTimeList.add(keyGeoPubFullTimePub);
+				// prepare Frequencies, indexes Map
+				if (!keyGeoPubTimeUpToMinuteList.contains(keyGeoPubMinutePub)) {
+					indexList = new ArrayList<Integer>();
+					keyGeoPubTimeUpToMinuteList.add(keyGeoPubMinutePub);
+					
+					geoPubTimeFreqMap = new HashMap<String,List<List<Integer>>>();
+					tmpholderForGeoPubTimeFreqMap.put(keyGeoPubMinutePub,
+							geoPubTimeFreqMap);
+					tmpholderForIndexMap.put(keyGeoPubMinutePub,indexList);
+					
+				} else {
+					geoPubTimeFreqMap = tmpholderForGeoPubTimeFreqMap.get(keyGeoPubMinutePub);
+					indexList = tmpholderForIndexMap.get(keyGeoPubMinutePub);
+					
+				}
+				
+				
+				collectFrequencyBasedOnKey(keyGeoPubMinutePub, geoPubTimeFreqMap,index,indexList);
+				
+				/*
+				 * 
+				 * Map<String,List<List<String>>>>
+				 * 
+				 * { WApub12014-08-04 12:30 = [[1,2,3,4], [20]}, 
+				 * 
+				 * 
+				 * {
+				 * WApub52014-08-04 12:30 = [[49, 46], [35]},
+				 * 
+				 *  
+				 *  { WApub52014-08-04 12:30 = [[4,5,6,7],[32]]}
+				 * 
+				 */
+
 			}
-
-			if (!keyGeoPubIndexList.contains(keyGeoPubTimePub + "index")) {
-				keyGeoPubIndexList.add(keyGeoPubTimePub + "index");
-				geoPubTimeIndexMap = new HashMap<String, List<Integer>>();
-				indexList = new ArrayList<Integer>();
-				tmpIndexMap.put(keyGeoPubTimePub + "index", geoPubTimeIndexMap);
-				tmpIndexListMap.put(keyGeoPubTimePub + "index", indexList);
-
-			} else {
-				geoPubTimeIndexMap = tmpIndexMap
-						.get(keyGeoPubTimePub + "index");
-				indexList = tmpIndexListMap.get(keyGeoPubTimePub + "index");
-			}
-
-			collectFrequencyBasedOnKey(keyGeoPub, keyGeoPubTimePub,
-					entry.getKey(), geoPubTimeFreqMap);
-
-			collectIndexBasedOnKey(keyGeoPub, keyGeoPubTimePub, entry.getKey(),
-					geoPubTimeIndexMap, indexList);
 
 			// System.out.println(" geoPubTimeFreqMap " + geoPubTimeFreqMap);
 			// System.out.println(" geoPubTimeIndexMap " + geoPubTimeIndexMap);
 
-			List<Map<String, List<Integer>>> values = new ArrayList<Map<String, List<Integer>>>();
-			values.add(geoPubTimeIndexMap);
-			values.add(geoPubTimeFreqMap);
-
-			// ConcurrentHashMap<String, List<String>> mapForAnalysis
-
-			aggregateMap.put(keyGeoPubTimePub, values);
+			//List<Map<String, List<Integer>>> values = new ArrayList<Map<String, List<Integer>>>();
+		    //values.addAll(geoPubTimeFreqMap);
+			//aggregateMap.put(keyGeoPubMinutePub, values);
 
 		}
+
+		//System.out.println(" aggregateMap " + tmpholderForGeoPubTimeFreqMap);
 
 		Values val = new Values();
 		val.add(mapForAnalysis);
-		val.add(aggregateMap);
+		val.add(tmpholderForGeoPubTimeFreqMap);
 		collector.emit(val);
-
-		// System.out.println(" aggregateMap " + aggregateMap);
-
 	}
 
-	@Override
-	public void declareOutputFields(OutputFieldsDeclarer declarer) {
+	private void collectFrequencyBasedOnKey(String keyGeoPubTime,
+			Map<String, List<List<Integer>>> geoPubTimeFreqMap, String index, List<Integer> indexList) {
+	/*
+		 * Map<String,List<List<String>>>> 
+		 * 
+		 * { WApub12014-08-04 12:30 = [ [1,2,3,4], [20] ]}, 
+		 * 
+		 * { WApub52014-08-04 12:30 = [[49, 46], [35]}, 
+		 * 
+		 * {WApub52014-08-04 12:30 = [[4,5,6,7],[32]]}
+		 * 
+		 */
 
-		declarer.declare(new Fields("mapForAnalysis","aggregatedBatch"));
+	  if (geoPubTimeFreqMap.containsKey(keyGeoPubTime)) {
+			List<List<Integer>> holderList = geoPubTimeFreqMap.get(keyGeoPubTime);
+			holderList.get(0).add(new Integer(Integer.parseInt(index)));
+			
+			// add up with old value
+			List<Integer> total = new ArrayList<Integer>();
+			int totalSum = holderList.get(1).get(0)+new Integer(1);
+			//System.out.println("total sum all the time. "+totalSum);
+			holderList.get(1).remove(0);
+		    holderList.get(1).add(0,totalSum);
+			//System.out.println(" unique holderList ...... "+holderList);
+			geoPubTimeFreqMap.put(keyGeoPubTime, holderList);
+       } else {
+    	     // first time
+    	    // list of indexes to maintain
+			List<Integer> indexes = new ArrayList<Integer>();
+			indexes.add(new Integer(Integer.parseInt(index)));
+			// total
+			List<Integer> total = new ArrayList<Integer>();
+			total.add(new Integer(1));
+			// add to holder list
+			List<List<Integer>> holderList = new ArrayList<List<Integer>>();
+			holderList.add(indexes);
+			holderList.add(total);
+			geoPubTimeFreqMap.put(keyGeoPubTime, holderList);
+	   }
+
 
 	}
-
-	private void collectIndexBasedOnKey(String keyGeoPub,
-			String keyGeoPubTimePub, String idIndex,
-			Map<String, List<Integer>> geoPubTimeIndexMap,
-			List<Integer> indexList) {
-
-		indexList.add(new Integer(Integer.parseInt(idIndex)));
-		geoPubTimeIndexMap.put(keyGeoPubTimePub + "index", indexList);
-	}
-
-	// NY_pub1_time1 --> <NY_pub1_time1_index --> [2,3,4,5,17],
-	// NY_pub1_time1_freq--> [5]> 9 5
-	// NY_pub1_time2 --> <NY_pub1_time1_index --> [12,13],
-	// NY_pub1_time1_freq-->[2]> 9 2
-	// NY_pub1_time3 --> <NY_pub1_time1_index --> [8,9], NY_pub1_time1_freq-->
-	// [2]> 9 2
-	// impression -- NY_pub , count - 9
-
-	private void collectFrequencyBasedOnKey(String keyGeoPub,
-			String keyGeoPubTime, String idIndex,
-			Map<String, List<Integer>> geoPubTimeFreqMap) {
-
-		if (geoPubTimeFreqMap.containsKey(keyGeoPubTime + "freq")) {
-
-			Integer freq = geoPubTimeFreqMap.get(keyGeoPubTime + "freq").get(0);
-			List<Integer> newfreq = new ArrayList<Integer>();
-			newfreq.add(freq + 1);
-			geoPubTimeFreqMap.put(keyGeoPubTime + "freq", newfreq);
-
-		} else {
-			List<Integer> freq = new ArrayList<Integer>();
-			freq.add(1);
-			geoPubTimeFreqMap.put(keyGeoPubTime + "freq", freq);
-		}
-
-	}
-
+	
 	private String getDateUptoMinute(String field) {
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm");
 		String dateUptoMinute = null;
@@ -162,5 +170,12 @@ public class AnalysisLogicBolt extends BaseBasicBolt {
 		} catch (ParseException e) {
 		}
 		return dateUptoMinute;
+	}
+
+	
+	@Override
+	public void declareOutputFields(OutputFieldsDeclarer declarer) {
+		declarer.declare(new Fields("mapForAnalysis","aggregatedBatch"));
+		
 	}
 }

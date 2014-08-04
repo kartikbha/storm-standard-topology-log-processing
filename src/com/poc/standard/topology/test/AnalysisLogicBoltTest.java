@@ -74,41 +74,44 @@ public class AnalysisLogicBoltTest {
 
 		ConcurrentHashMap<String, List<String>> mapForAnalysis1 = new ConcurrentHashMap<String, List<String>>();
 
+		/**
 		List<String> attr1 = new ArrayList<String>(Arrays.asList("NY", "pub5",
 				"www.a12.com", "0.001", "2014-08-03 04:54:22 PM"));
 		mapForAnalysis1.put("1", attr1);
 
-	
-		attr1 = new ArrayList<String>(Arrays.asList("NY", "pub5",
-				"www.a12.com", "0.001", "2014-08-03 04:54:22 PM"));
+	    attr1 = new ArrayList<String>(Arrays.asList("NY", "pub5",
+				"www.a12.com", "0.002", "2014-08-03 04:54:22 PM"));
 		mapForAnalysis1.put("2", attr1);
 
-		/*
+	
 		attr1 = new ArrayList<String>(Arrays.asList("NY", "pub5",
-				"www.a12.com", "0.001", "2014-08-03 04:54:22 PM"));
+				"www.a12.com", "0.003", "2014-08-03 04:54:21 PM"));
 		mapForAnalysis1.put("3", attr1);
 
-		attr1 = new ArrayList<String>(Arrays.asList("NY", "pub5",
-				"www.a12.com", "0.001", "2014-08-03 04:54:22 PM"));
-		mapForAnalysis1.put("4", attr1);
 
-   
 		attr1 = new ArrayList<String>(Arrays.asList("NY", "pub5",
-				"www.a12.com", "0.001", "2014-08-03 04:54:22 PM"));
+				"www.a12.com", "0.003", "2014-08-03 04:54:21 PM"));
+		mapForAnalysis1.put("4", attr1);
+		
+	
+		attr1 = new ArrayList<String>(Arrays.asList("NY", "pub3",
+				"www.a12.com", "0.001", "2014-08-03 04:56:23 PM"));
 		mapForAnalysis1.put("5", attr1);
 
-		*/
-		attr1 = new ArrayList<String>(Arrays.asList("WA", "pub1", "www.abc.com",
+		
+		attr1 = new ArrayList<String>(Arrays.asList("NY", "pub5",
+				"www.a12.com", "0.001", "2014-08-03 04:55:21 PM"));
+		mapForAnalysis1.put("6", attr1);
+
+     	attr1 = new ArrayList<String>(Arrays.asList("NY", "pub5",
+				"www.a12.com", "0.001", "2014-08-03 04:54:22 PM"));
+		mapForAnalysis1.put("7", attr1);
+
+	    attr1 = new ArrayList<String>(Arrays.asList("WA", "pub1", "www.abc.com",
 				"0.005", "2014-08-03 04:54:23 PM"));
-		mapForAnalysis1.put("3", attr1);
+		mapForAnalysis1.put("8", attr1);
 		
-		
-		attr1 = new ArrayList<String>(Arrays.asList("NC", "pub3", "www.a12.com",
-				"0.005", "2014-08-03 04:54:23 PM"));
-		mapForAnalysis1.put("4", attr1);
-		
-		
-		
+		**/
 		System.out.println("mapForAnalysis1 size  " + mapForAnalysis1.size());
 
 		//AnalysisLogicBolt call = new AnalysisLogicBolt();

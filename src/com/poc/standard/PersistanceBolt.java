@@ -64,7 +64,6 @@ public class PersistanceBolt extends BaseRichBolt {
 			//System.out.println(" row  "+entry.getValue());
 		 }
 		System.out.println("recordToSave      "+recordToSave);
-		
 		LOG.info(" recordToSave "+recordToSave);
 		System.out.println("recordToSave size "+recordToSave.size());
 		DBCollection collection = db.getCollection(MONDO_DB_COLLECTION);

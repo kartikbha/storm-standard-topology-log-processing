@@ -60,12 +60,10 @@ public class LogGenerationSpout extends BaseRichSpout {
 	    for(int i = 0; i <= batchSize; i++) {
 			this.collector.emit(getNextLogs());
 		}
-	    
-		LOG.info(" dispatched batch... ");
-		
-	    System.out.println("dispatched batch...");
+	    LOG.info(" dispatched batch... ");
+		System.out.println("dispatched batch...");
 	    try {
-			Thread.sleep(500);
+			Thread.sleep(10000);
 		} catch (InterruptedException e) {
 		}
 	    
