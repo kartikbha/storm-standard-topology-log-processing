@@ -5,6 +5,9 @@ import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -14,6 +17,9 @@ import backtype.storm.tuple.Values;
 
 public class LogGenerationSpout extends BaseRichSpout {
 
+	private static final Logger LOG = LoggerFactory
+			.getLogger(LogGenerationSpout.class);
+	
 	private SpoutOutputCollector collector;
 	private int batchSize;
 	public LogGenerationSpout()  {
@@ -54,9 +60,12 @@ public class LogGenerationSpout extends BaseRichSpout {
 	    for(int i = 0; i <= batchSize; i++) {
 			this.collector.emit(getNextLogs());
 		}
+	    
+		LOG.info(" dispatched batch... ");
+		
 	    System.out.println("dispatched batch...");
 	    try {
-			Thread.sleep(5000);
+			Thread.sleep(500);
 		} catch (InterruptedException e) {
 		}
 	    

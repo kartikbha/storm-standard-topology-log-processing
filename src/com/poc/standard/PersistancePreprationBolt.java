@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import backtype.storm.topology.BasicOutputCollector;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseBasicBolt;
@@ -18,21 +21,21 @@ import backtype.storm.tuple.Values;
 
 public class PersistancePreprationBolt extends BaseBasicBolt {
 
+	private static final Logger LOG = LoggerFactory
+			.getLogger(PersistancePreprationBolt.class);
+	
+	
 	@Override
 	public void execute(Tuple input, BasicOutputCollector collector) {
 
 		Map<String, List<Map<String, List<Integer>>>> aggregatedMap = (Map<String, List<Map<String, List<Integer>>>>) input
 				.getValueByField("aggregatedBatch");
-		
 		ConcurrentHashMap<String, List<String>> mapForAnalysis = (ConcurrentHashMap<String, List<String>>) input
 				.getValueByField("mapForAnalysis");
 		
-		
 		Map<String,List<String>> totalRecords = new HashMap<String,List<String>>();
-				
 		int keyIndex = 0;
-		
-       for (Entry<String, List<Map<String, List<Integer>>>> entry : aggregatedMap.entrySet()) {
+		for (Entry<String, List<Map<String, List<Integer>>>> entry : aggregatedMap.entrySet()) {
              	
 			String key  = entry.getKey();
 			List<Map<String, List<Integer>>> aggregation =  entry.getValue();
@@ -53,31 +56,28 @@ public class PersistancePreprationBolt extends BaseBasicBolt {
 				pub = logRow.get(1);
 				geo = logRow.get(0);
 			}
-			
 			// date 1
 			rowTOSaveNoSQL.add(getDateUptoMinute(date));
 			// pub  2
 			rowTOSaveNoSQL.add(pub);
 			// geo  3
 			rowTOSaveNoSQL.add(geo);
-			
 			//System.out.println(" before doing avg avgBid  "+avgBid+" freq "+(float)freq.get(0).intValue());
 			avgBid = avgBid / (float)freq.get(0).intValue();
-		   // System.out.println(" avgBid  "+avgBid);
+		    // System.out.println(" avgBid  "+avgBid);
 			// avg bid 4
 			rowTOSaveNoSQL.add(Float.toString(avgBid));
 			// uniques
 			rowTOSaveNoSQL.add(Float.toString( (float)freq.get(0).intValue()));
-			
 			keyIndex++;
 			totalRecords.put(new Integer(keyIndex).toString(),rowTOSaveNoSQL);
-			
 		}
+		System.out.println(" aggregatedMap  "+aggregatedMap);
+		System.out.println(" aggregatedMap size  "+aggregatedMap.size());
 		
+		LOG.info(" aggregatedMap "+aggregatedMap);
 		
-	     System.out.println(" aggregatedMap  "+aggregatedMap);
-	  
-		 collector.emit(new Values(totalRecords));
+	    collector.emit(new Values(totalRecords));
 	}
 
 	private String getDateUptoMinute(String field) {
@@ -92,8 +92,7 @@ public class PersistancePreprationBolt extends BaseBasicBolt {
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		// TODO Auto-generated method stub
-		declarer.declare(new Fields("recordToPersist"));
+       declarer.declare(new Fields("recordToPersist"));
 	}
 
 }

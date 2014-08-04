@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import backtype.storm.topology.BasicOutputCollector;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseBasicBolt;
@@ -16,6 +19,9 @@ import backtype.storm.tuple.Values;
 
 public class BatchSizeFilterBolt extends BaseBasicBolt {
 
+	private static final Logger LOG = LoggerFactory
+			.getLogger(BatchSizeFilterBolt.class);
+	
     // TODO not thread safe
 	ConcurrentHashMap<String, List<String>> concurrentMap = new  ConcurrentHashMap<String, List<String>>();
 

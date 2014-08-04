@@ -34,11 +34,11 @@ public class ChimperLogAnalysisTopology {
 			conf.setDebug(false);
 			conf.setMaxTaskParallelism(3);
 			
-			int batchSize = 10;
+			int batchSize = 25;
 			builder.setSpout("LogGenerationSpout", new LogGenerationSpout(batchSize), 1);
 
 			builder.setBolt("BatchSizeFilterBolt", new BatchSizeFilterBolt(batchSize),
-					10).setNumTasks(1).shuffleGrouping("LogGenerationSpout");
+					1).setNumTasks(1).shuffleGrouping("LogGenerationSpout");
 
 			builder.setBolt("AnalysisLogicBolt", new AnalysisLogicBolt(), 1)
 					.setNumTasks(1).shuffleGrouping("BatchSizeFilterBolt");
@@ -52,12 +52,12 @@ public class ChimperLogAnalysisTopology {
 			
 			if (args != null && args.length > 0) {
 				// Submit topology
-				StormSubmitter.submitTopology(args[0], conf,
+				StormSubmitter.submitTopology("logProcessing", conf,
 						builder.createTopology());
 
 			} else {
 				LocalCluster cluster = new LocalCluster();
-				cluster.submitTopology("standardLogAnalysisTopology", conf,
+				cluster.submitTopology("logProcessing", conf,
 						builder.createTopology());
 			}
 		} catch (AlreadyAliveException | InvalidTopologyException e) {
